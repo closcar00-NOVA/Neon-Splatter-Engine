@@ -30,7 +30,10 @@ window.addEventListener('mousedown', (e) => {
     Composite.add(engine.world, [ball]);
 });
 
-// The Handshake: Listen for the exact moment of impact
+// 1. Create a "Trash Can" to hold balls safely until the math is done
+let ballsToDelete = [];
+
+// 2. The Handshake: Tag balls for deletion and trigger the explosion
 Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
         const bodyA = pair.bodyA;
@@ -40,19 +43,25 @@ Events.on(engine, 'collisionStart', (event) => {
         if (bodyA.label === 'projectile' || bodyB.label === 'projectile') {
             const projectile = bodyA.label === 'projectile' ? bodyA : bodyB;
             
-            // 1. DELETE FIRST: Ensure the ball vanishes instantly so they never pile up
-            Composite.remove(engine.world, projectile);
-            
-            // 2. EXPLODE SECOND: Safely trigger the neon smoke without crashing the engine
-            if (window.triggerSmokeSplatter) {
-                try {
+            // Ensure we only process each ball once
+            if (!ballsToDelete.includes(projectile)) {
+                ballsToDelete.push(projectile);
+                
+                // Trigger the neon smoke safely
+                if (window.triggerSmokeSplatter) {
                     window.triggerSmokeSplatter(projectile.position.x, projectile.position.y);
-                } catch (error) {
-                    console.error("Explosion error:", error);
                 }
             }
         }
     });
+});
+
+// 3. Safely empty the trash AFTER the physics engine finishes its frame
+Events.on(engine, 'afterUpdate', () => {
+    if (ballsToDelete.length > 0) {
+        Composite.remove(engine.world, ballsToDelete);
+        ballsToDelete = []; 
+    }
 });
 
 Render.run(render);
