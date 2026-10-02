@@ -24,14 +24,9 @@ tsParticles.load("tsparticles", {
 window.triggerSmokeSplatter = function(x, y) {
     const container = tsParticles.domItem(0);
     if (container) {
-        let percentX = (x / window.innerWidth) * 100;
-        let percentY = (y / window.innerHeight) * 100;
-
-        container.addEmitter({
-            direction: "none",
-            life: { count: 1, duration: 0.1, delay: 0 },
-            rate: { delay: 0, quantity: 150 }, // Massive burst of 150 particles per impact
-            position: { x: percentX, y: percentY }
-        });
+        // Manually inject 100 particles at the exact pixel impact coordinates
+        for (let i = 0; i < 100; i++) {
+            container.particles.addParticle({ x: x, y: y });
+        }
     }
 };
