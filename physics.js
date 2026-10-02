@@ -38,15 +38,19 @@ Events.on(engine, 'collisionStart', (event) => {
         
         // Check if either colliding object is a projectile
         if (bodyA.label === 'projectile' || bodyB.label === 'projectile') {
-            
-            // Identify which one is the projectile
             const projectile = bodyA.label === 'projectile' ? bodyA : bodyB;
             
-            // 1. Fire the tsParticles explosion at its exact coordinates
-            window.triggerSmokeSplatter(projectile.position.x, projectile.position.y);
-            
-            // 2. Erase the rigid ball instantly so they don't pile up
+            // 1. DELETE FIRST: Ensure the ball vanishes instantly so they never pile up
             Composite.remove(engine.world, projectile);
+            
+            // 2. EXPLODE SECOND: Safely trigger the neon smoke without crashing the engine
+            if (window.triggerSmokeSplatter) {
+                try {
+                    window.triggerSmokeSplatter(projectile.position.x, projectile.position.y);
+                } catch (error) {
+                    console.error("Explosion error:", error);
+                }
+            }
         }
     });
 });
