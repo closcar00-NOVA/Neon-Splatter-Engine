@@ -33,14 +33,20 @@ window.addEventListener('mousedown', (e) => {
 // The Handshake: Listen for the exact moment of impact
 Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
-        // Check if the ball hit the floor
-        if (pair.bodyA.label === 'projectile' && pair.bodyB.label === 'wall') {
+        const bodyA = pair.bodyA;
+        const bodyB = pair.bodyB;
+        
+        // Check if either colliding object is a projectile
+        if (bodyA.label === 'projectile' || bodyB.label === 'projectile') {
             
-            // 1. Fire the tsParticles function using the ball's coordinates
-            window.triggerSmokeSplatter(pair.bodyA.position.x, pair.bodyA.position.y);
+            // Identify which one is the projectile
+            const projectile = bodyA.label === 'projectile' ? bodyA : bodyB;
             
-            // 2. Erase the rigid ball instantly
-            Composite.remove(engine.world, pair.bodyA);
+            // 1. Fire the tsParticles explosion at its exact coordinates
+            window.triggerSmokeSplatter(projectile.position.x, projectile.position.y);
+            
+            // 2. Erase the rigid ball instantly so they don't pile up
+            Composite.remove(engine.world, projectile);
         }
     });
 });
